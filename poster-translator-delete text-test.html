@@ -1,0 +1,1512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poster Language Translator</title>
+<style>
+:root{--jade:#00A86B;--emerald:#00A267;--bg:#F3FBF7;--text:#202923;--border:#DDE6E0;--white:#FFFFFF;--link:#007a4d;--ink:#06231a;--muted:#4a5750}
+*{box-sizing:border-box}
+html,body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;min-height:100vh}
+.inner{max-width:1100px;margin:0 auto}
+.top{background:var(--white);border-bottom:1px solid var(--border);padding:14px 20px 16px}
+.r1{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:1.4rem;line-height:1.25}
+.r2{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.r2 select{flex:1 1 260px}
+.btn{font:inherit;font-weight:600;min-height:44px;padding:8px 22px;border-radius:10px;border:1px solid var(--border);background:var(--white);color:var(--text);cursor:pointer}
+.btn:hover{background:var(--bg)}
+.btn.small{min-height:36px;padding:4px 12px;font-size:.9rem}
+.btn.primary{background:var(--jade);border-color:var(--jade);color:var(--ink)}
+.btn.primary:hover{background:var(--emerald)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--jade);outline-offset:2px}
+select,input[type=text],input[type=number],textarea{font:inherit;width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--white);color:var(--text)}
+select{min-height:44px}
+input[type=color]{width:100%;height:42px;padding:3px;border:1px solid var(--border);border-radius:10px;background:var(--white)}
+textarea{resize:vertical}
+details.keep{margin-top:8px;font-size:.9rem;color:var(--muted)}
+details.keep summary{cursor:pointer;width:max-content}
+details.keep input{margin-top:6px}
+.main{padding:14px 20px 0}
+.note{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+.msg{margin:0 0 10px;padding:8px 12px;border-radius:10px;font-size:.92rem;border:1px solid var(--border);background:var(--white)}
+.msg.error{border-color:#c0392b;background:#fdeceb}
+.msg.warn{border-color:#c28a00;background:#fff7e0}
+.msg.ok{border-color:var(--jade)}
+#ocrHelp{margin:0 0 10px;font-size:.92rem}
+#ocrHelp a,.link{color:var(--link);font-weight:600}
+.stage{border:2px dashed #5cba8f;border-radius:16px;background:var(--white);min-height:340px;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center;color:var(--muted)}
+.stage.drag{background:#e4f6ec;border-color:var(--jade)}
+#wrap{position:relative;display:inline-block;line-height:0}
+#out{max-width:100%;max-height:78vh;width:auto;height:auto;display:block}
+#ov{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#ov.off{pointer-events:none}
+#ov.on{cursor:crosshair}
+.dock{position:sticky;bottom:14px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0;pointer-events:none}
+.dock>*{pointer-events:auto}
+.card{width:100%;max-width:780px;max-height:52vh;overflow:auto;background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 28px rgba(20,60,40,.16);padding:14px 16px;display:grid;gap:10px}
+.phead{display:flex;align-items:center;gap:10px}
+.sp{flex:1}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:1px 10px;font-size:.85rem}
+.x{font:inherit;font-size:1.4rem;line-height:1;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--white);cursor:pointer}
+label{display:block;font-size:.88rem;font-weight:600;margin:0 0 3px}
+.muted{color:var(--muted);font-size:.88rem;font-weight:400}
+p.muted{margin:0}
+.trhead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.link{font:inherit;font-size:.85rem;background:none;border:0;padding:4px 0;cursor:pointer;text-decoration:underline}
+.sugg{display:flex;gap:6px;flex-wrap:wrap;min-height:0}
+.sg{font:inherit;font-size:1rem;padding:4px 12px;border-radius:999px;border:1px solid var(--border);background:var(--white);cursor:pointer}
+.sg.first{border-color:var(--jade);background:#e4f6ec;font-weight:600}
+.sg:hover{background:#e4f6ec}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+fieldset[disabled]{opacity:.5}
+.stylegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:end}
+.stylegrid .wide{grid-column:span 2}
+.checks{display:flex;gap:16px;align-items:center;min-height:42px}
+.checks label{display:flex;gap:6px;align-items:center;margin:0}
+.menuwrap{position:relative;display:flex;justify-content:center}
+.menu{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(20,60,40,.16);padding:6px;display:grid;min-width:250px}
+.menu a{display:block;padding:9px 12px;border-radius:8px;color:var(--text);text-decoration:none;font-size:.95rem}
+.menu a:hover{background:var(--bg)}
+.menu small{display:block;color:var(--muted);font-size:.8rem}
+.pill{display:flex;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:999px;padding:6px 10px;box-shadow:0 8px 28px rgba(20,60,40,.16)}
+.tool{width:46px;height:46px;border-radius:50%;border:0;background:transparent;color:var(--text);cursor:pointer;display:grid;place-items:center}
+.tool:hover{background:var(--bg)}
+.tool.on{background:#d9f3e6;color:var(--ink)}
+.tool.dim{opacity:.55}
+.tool[disabled]{opacity:.35;cursor:not-allowed}
+.tool svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:640px){.top{padding:12px 14px}.main{padding:12px 14px 0}.stylegrid .wide{grid-column:span 1}}
+</style>
+</head>
+<body>
+<header class="top"><div class="inner">
+  <div class="r1">
+    <h1>Poster Language Translator</h1>
+    <button id="btnUpload" class="btn" type="button">Upload Poster</button>
+  </div>
+  <div class="r2">
+    <select id="lang" aria-label="Translate into"></select>
+    <button id="btnReset" class="btn" type="button">Reset</button>
+    <button id="btnTranslate" class="btn primary" type="button">Translate</button>
+  </div>
+  <details class="keep"><summary>Keep brand or product names unchanged</summary>
+    <input id="keep" type="text" aria-label="Names to keep unchanged, comma-separated" placeholder="e.g. Livlong, Turtlemint Fintech Solutions Ltd">
+  </details>
+</div></header>
+<input id="file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden>
+
+<main class="inner main">
+  <p class="note">Your poster stays on this device. Drag a box around any text to translate or delete just that area, or click Translate for the whole poster. <span id="status"></span></p>
+  <div id="msg" class="msg" role="status" aria-live="polite" hidden></div>
+  <div id="ocrHelp" hidden></div>
+  <div id="stage" class="stage">
+    <div id="ph">Upload a PNG, JPG or WebP poster to begin (or drop it here)</div>
+    <div id="wrap" hidden>
+      <canvas id="out" role="img" aria-label="Poster preview"></canvas>
+      <canvas id="ov" class="off" tabindex="-1" aria-label="Poster editing layer. Arrow keys select the next or previous text area, or move the selected text."></canvas>
+    </div>
+  </div>
+
+  <div class="dock">
+    <section id="panel" class="card" hidden aria-label="Selected area">
+      <div class="phead"><strong>Selected area</strong><span id="pLang" class="chip"></span><span class="sp"></span>
+        <button id="btnDelete" class="btn small" type="button" title="Remove the text in this area from the poster (Delete key)">Delete text</button>
+        <button id="btnAreaReset" class="btn small" type="button" title="Put the original poster text back in this area">Reset area to original</button>
+        <button id="pClose" class="x" type="button" aria-label="Clear selection" title="Clear selection (Esc)">×</button></div>
+      <div id="tabEdit">
+        <label for="engTxt">Detected English <span class="muted">(fix any reading mistakes)</span></label>
+        <textarea id="engTxt" rows="2" lang="en" spellcheck="false"></textarea>
+        <div class="trhead" style="margin-top:8px"><label for="trTxt" id="trLabel">Translated text</label><button id="typeMode" class="link" type="button"></button></div>
+        <textarea id="trTxt" rows="3" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+        <div id="sugg" class="sugg" aria-label="Typing suggestions"></div>
+        <p id="edNote" class="muted"></p>
+      </div>
+      <div id="tabFont" hidden>
+        <p id="fontHint" class="muted">Translate this area first, then style its text.</p>
+        <fieldset id="styleSet" class="stylegrid" disabled>
+          <div class="wide"><label for="stFont">Font</label><select id="stFont"></select></div>
+          <div><label for="stSize">Size (px)</label><input id="stSize" type="number" min="4" max="600" step="1"></div>
+          <div><label for="stColor">Colour</label><input id="stColor" type="color"></div>
+          <div><label for="stAlign">Alignment</label><select id="stAlign"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div>
+          <div><label for="stLh">Line spacing</label><input id="stLh" type="number" min="0.8" max="2.5" step="0.05"></div>
+          <div class="checks"><label><input type="checkbox" id="stBold"> Bold</label><label><input type="checkbox" id="stItalic"> Italic</label></div>
+        </fieldset>
+        <p class="muted" style="margin-top:8px">Tip: drag the text to move it, its right edge to change the width, its corner to scale it.</p>
+      </div>
+    </section>
+
+    <div class="menuwrap">
+      <div id="dlMenu" class="menu" hidden>
+        <a id="dlPng" href="#"></a>
+        <a id="dlSvg" href="#" hidden>Editable SVG<small>Poster plus real text you can edit in Figma, Inkscape or Illustrator</small></a>
+        <a id="dlBg" href="#" hidden>Background only (PNG)<small>English text removed, no new text</small></a>
+      </div>
+      <nav class="pill" aria-label="Poster tools">
+        <button id="tSelect" class="tool on" type="button" title="Select area: click a text or drag a box" aria-label="Select area">
+          <svg viewBox="0 0 24 24"><path d="M4 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M20 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><path d="M10 10l8 3-3.5 1.5L13 18z"/></svg></button>
+        <button id="tFont" class="tool dim" type="button" title="Font and text style" aria-label="Font and text style">
+          <svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></button>
+        <button id="tEdit" class="tool dim" type="button" title="Edit or type the translation" aria-label="Edit or type the translation">
+          <svg viewBox="0 0 24 24"><path d="M16.5 3.5l4 4L8 20l-5 1 1-5z"/><path d="M14 6l4 4"/></svg></button>
+        <button id="tDownload" class="tool" type="button" title="Download" aria-label="Download" aria-haspopup="true">
+          <svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></button>
+      </nav>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* ===================== Languages ===================== */
+const LANGS = [
+  {code:'hi', name:'Hindi',    native:'हिन्दी',  fam:'"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari","Devanagari Sangam MN",Mangal,"Lohit Devanagari"', ser:'"Noto Serif Devanagari",Kokila,"Devanagari MT"'},
+  {code:'kn', name:'Kannada',  native:'ಕನ್ನಡ',    fam:'"Noto Sans Kannada","Nirmala UI","Kannada Sangam MN",Tunga,"Lohit Kannada"', ser:'"Noto Serif Kannada",Tunga'},
+  {code:'te', name:'Telugu',   native:'తెలుగు',   fam:'"Noto Sans Telugu","Nirmala UI","Telugu Sangam MN",Gautami,"Lohit Telugu"', ser:'"Noto Serif Telugu",Gautami'},
+  {code:'ta', name:'Tamil',    native:'தமிழ்',    fam:'"Noto Sans Tamil","Nirmala UI","Tamil Sangam MN",Latha,"Lohit Tamil"', ser:'"Noto Serif Tamil",Latha'},
+  {code:'bn', name:'Bengali',  native:'বাংলা',    fam:'"Noto Sans Bengali","Nirmala UI","Bangla Sangam MN",Vrinda,"Lohit Bengali"', ser:'"Noto Serif Bengali",Vrinda'},
+  {code:'mr', name:'Marathi',  native:'मराठी',    fam:'"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari","Devanagari Sangam MN",Mangal,"Lohit Devanagari"', ser:'"Noto Serif Devanagari",Kokila,"Devanagari MT"'},
+  {code:'gu', name:'Gujarati', native:'ગુજરાતી',  fam:'"Noto Sans Gujarati","Nirmala UI","Gujarati Sangam MN",Shruti,"Lohit Gujarati"', ser:'"Noto Serif Gujarati",Shruti'}
+];
+const LI = Object.fromEntries(LANGS.map((l, i) => [l.code, i]));
+const langOf = code => LANGS[LI[code]];
+
+/* ===================== Terminology glossary =====================
+   Familiar English industry terms, written in each script.
+   Column order: English, hi, kn, te, ta, bn, mr, gu
+   Spellings are common usage; have a native reviewer confirm before publishing. */
+const Z = '\u200c';
+const GLOSSARY = [
+ ['insurance','इंश्योरेंस','ಇನ್ಶೂರೆನ್ಸ್','ఇన్సూరెన్స్','இன்ஷூரன்ஸ்','ইন্স্যুরেন্স','इन्शुरन्स','ઇન્શ્યોરન્સ'],
+ ['premium','प्रीमियम','ಪ್ರೀಮಿಯಂ','ప్రీమియం','பிரீமியம்','প্রিমিয়াম','प्रीमियम','પ્રીમિયમ'],
+ ['policy','पॉलिसी','ಪಾಲಿಸಿ','పాలసీ','பாலிசி','পলিসি','पॉलिसी','પૉલિસી'],
+ ['policies','पॉलिसी','ಪಾಲಿಸಿ','పాలసీ','பாலிசி','পলিসি','पॉलिसी','પૉલિસી'],
+ ['bonus','बोनस','ಬೋನಸ್','బోనస్','போனஸ்','বোনাস','बोनस','બોનસ'],
+ ['no claim bonus','नो क्लेम बोनस','ನೋ ಕ್ಲೈಮ್ ಬೋನಸ್','నో క్లెయిమ్ బోనస్','நோ க்ளெய்ம் போனஸ்','নো ক্লেম বোনাস','नो क्लेम बोनस','નો ક્લેમ બોનસ'],
+ ['claim','क्लेम','ಕ್ಲೈಮ್','క్లెయిమ్','க்ளெய்ம்','ক্লেম','क्लेम','ક્લેમ'],
+ ['cashless','कैशलेस','ಕ್ಯಾಶ್'+Z+'ಲೆಸ್','క్యాష్'+Z+'లెస్','கேஷ்லெஸ்','ক্যাশলেস','कॅशलेस','કેશલેસ'],
+ ['renewal','रिन्यूअल','ರಿನ್ಯೂವಲ್','రెన్యువల్','ரினிவல்','রিনিউয়াল','रिन्यूअल','રિન્યુઅલ'],
+ ['coverage','कवरेज','ಕವರೇಜ್','కవరేజ్','கவரேஜ்','কভারেজ','कव्हरेज','કવરેજ'],
+ ['super top-up','सुपर टॉप-अप','ಸೂಪರ್ ಟಾಪ್-ಅಪ್','సూపర్ టాప్-అప్','சூப்பர் டாப்-அப்','সুপার টপ-আপ','सुपर टॉप-अप','સુપર ટૉપ-અપ'],
+ ['top-up','टॉप-अप','ಟಾಪ್-ಅಪ್','టాప్-అప్','டாப்-அப்','টপ-আপ','टॉप-अप','ટૉપ-અપ'],
+ ['add-on','ऐड-ऑन','ಆ್ಯಡ್-ಆನ್','యాడ్-ఆన్','ஆட்-ஆன்','অ্যাড-অন','ॲड-ऑन','એડ-ઓન'],
+ ['sum insured','सम इंश्योर्ड','ಸಮ್ ಇನ್ಶೂರ್ಡ್','సమ్ ఇన్సూర్డ్','சம் இன்ஷூர்டு','সাম ইন্স্যুরড','सम इन्शुअर्ड','સમ ઇન્શ્યોર્ડ'],
+ ['deductible','डिडक्टिबल','ಡಿಡಕ್ಟಿಬಲ್','డిడక్టిబుల్','டிடக்டிபிள்','ডিডাক্টিবল','डिडक्टिबल','ડિડક્ટિબલ'],
+ ['personal loan','पर्सनल लोन','ಪರ್ಸನಲ್ ಲೋನ್','పర్సనల్ లోన్','பர்சனல் லோன்','পার্সোনাল লোন','पर्सनल लोन','પર્સનલ લોન'],
+ ['emi','ईएमआई','ಇಎಂಐ','ఈఎంఐ','இஎம்ஐ','ইএমআই','ईएमआय','ઈએમઆઈ'],
+ ['loan','लोन','ಲೋನ್','లోన్','லோன்','লোন','लोन','લોન'],
+ ['investment','इन्वेस्टमेंट','ಇನ್ವೆಸ್ಟ್'+Z+'ಮೆಂಟ್','ఇన్వెస్ట్'+Z+'మెంట్','இன்வெஸ்ட்மெண்ட்','ইনভেস্টমেন্ট','इन्व्हेस्टमेंट','ઇન્વેસ્ટમેન્ટ'],
+ ['customer','कस्टमर','ಕಸ್ಟಮರ್','కస్టమర్','கஸ்டமர்','কাস্টমার','कस्टमर','કસ્ટમર'],
+ ['online','ऑनलाइन','ಆನ್'+Z+'ಲೈನ್','ఆన్'+Z+'లైన్','ஆன்லைன்','অনলাইন','ऑनलाइन','ઓનલાઇન'],
+ ['app','ऐप','ಆ್ಯಪ್','యాప్','ஆப்','অ্যাপ','ॲप','એપ']
+];
+const normKey = s => s.toLowerCase().replace(/[-\s]+/g, ' ').trim();
+const GL = new Map(GLOSSARY.map(r => [normKey(r[0]), r.slice(1)]));
+const escRx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const GLOSS_SRC = '(?<!\\w)(?:' + GLOSSARY.map(r => r[0]).sort((a, b) => b.length - a.length)
+  .map(t => escRx(t).replace(/ /g, '\\s+').replace(/-/g, '[-\\s]?')).join('|') + ')(?:s)?(?!\\w)';
+const PROT_SRC = String.raw`(?:https?:\/\/|www\.)[^\s]+|[\w.+-]+@[\w-]+(?:\.[\w-]+)+|(?<!\w)(?:(?:Rs\.?|INR)\s?)?(?:[₹$€£]\s?)?\w*\d[\w.,\/:%+-]*`;
+const CAPS_STOP = new Set(['NEW','FREE','SAVE','NOW','GET','BUY','SALE','OFF','TODAY','ONLY','BEST','BIG','HOT','WIN','PLUS','FAST','EASY','EXTRA','OFFER','OFFERS','DEAL','DEALS','SUPER','MEGA','FLAT','UP','TO','NO','YES','AND','THE','FOR','YOUR','OUR','WITH','FROM','LIMITED','TIME','SHOP','JOIN','CALL','VISIT','HEALTH','LIFE','MOTOR','CAR','HOME','TRAVEL','PLAN','PLANS','COVER','COVERS','PRESENTING']);
+
+/* ===================== State ===================== */
+const S = {
+  url:null, w:0, h:0, src:null, sctx:null,
+  bg:null,            // original with the English text removed (never includes new text)
+  detected:null,      // cached detection (geometry + English text)
+  blocks:null,        // working text layers; null = operation not run yet
+  lang:'hi', outLang:null,
+  sel:null, trDirty:false,
+  busy:false, hover:null, drag:null, nextId:1,
+  pngUrl:null, exportTimer:null, last:null, tab:'edit', typeEng:false
+};
+const measureCtx = document.createElement('canvas').getContext('2d');
+
+/* ===================== Messages & UI ===================== */
+function say(text, kind = 'info') {
+  const m = $('msg'); m.textContent = text || ''; m.className = 'msg ' + kind; m.hidden = !text;
+}
+function hasTranslation() { return !!(S.blocks && S.blocks.some(b => b.translated || b.deleted)); }
+function selBlock() { return S.sel && S.sel.blockId != null && S.blocks ? S.blocks.find(b => b.id === S.sel.blockId) || null : null; }
+function pendingEdit() {
+  if (!S.sel) return false;
+  return S.trDirty || $('engTxt').value.trim() !== (S.sel.origEng || '').trim();
+}
+function dlName() { return hasTranslation() ? 'poster_' + langOf(S.outLang || S.lang).name.toLowerCase() + '.png' : 'poster_original.png'; }
+const rgbHex = c => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const EXAMPLE = {hi:'namaste', mr:'namaskar', gu:'kem cho', bn:'nomoshkar', ta:'vanakkam', te:'namaskaram', kn:'namaskara'};
+
+function updateUi() {
+  const has = !!S.src;
+  $('btnTranslate').textContent = S.sel ? 'Translate area' : 'Translate';
+  $('btnTranslate').disabled = S.busy || !has;
+  $('btnTranslate').setAttribute('aria-busy', S.busy ? 'true' : 'false');
+  $('btnReset').disabled = !has;
+  $('tDownload').disabled = !has;
+  let st = '';
+  if (has) {
+    if (S.blocks === null) st = 'Original image · translation not applied';
+    else if (!S.blocks.length) st = 'Original image · no text areas yet';
+    else if (!hasTranslation()) st = 'Text detected · translation not applied';
+    else {
+      const nT = S.blocks.filter(b => b.translated).length, nD = S.blocks.filter(b => b.deleted).length;
+      st = (nT ? 'Translated to ' + langOf(S.outLang || S.lang).name + ' · ' + nT + ' text area(s)' : 'Edited') + (nD ? ' · ' + nD + ' deleted' : '');
+    }
+    if (pendingEdit()) st += ' · correction pending';
+  }
+  $('status').textContent = st ? '— ' + st : '';
+  $('dlPng').textContent = hasTranslation() ? 'PNG image (' + dlName() + ')' : 'Original image, not translated (PNG)';
+  $('dlSvg').hidden = $('dlBg').hidden = !hasTranslation();
+  const on = has;
+  $('ov').className = on ? 'on' : 'off'; $('ov').tabIndex = on ? 0 : -1;
+  $('btnAreaReset').disabled = !canResetArea();
+  $('btnDelete').disabled = !S.sel;
+  ['tFont', 'tEdit'].forEach(id => $(id).classList.toggle('dim', !S.sel));
+  $('tSelect').classList.toggle('on', !S.sel);
+  updateEditorMeta();
+}
+function updateEditorMeta() {
+  if (!S.sel) return;
+  const L = langOf(S.lang), ex = EXAMPLE[S.lang];
+  $('pLang').textContent = L.name + ' — ' + L.native;
+  $('trLabel').textContent = 'Translated text (' + L.name + ')';
+  $('trTxt').lang = S.lang;
+  $('trTxt').placeholder = S.typeEng ? 'Typing in English' : 'Type in English letters: “' + ex + '” + space → ' + translit(normalizeRoman(ex.split(' ')[0]), S.lang);
+  $('typeMode').textContent = S.typeEng ? 'Typing: English · press Ctrl+G for ' + L.native : 'Typing: ' + L.native + ' · press Ctrl+G for English';
+  $('edNote').textContent = pendingEdit()
+    ? 'Correction pending: click “Translate area” to apply it to this text only.'
+    : 'Only this text changes. Click “Translate area” to translate it automatically, or type your own above and click it to apply. “Delete text” removes it from the poster.';
+}
+/* ---- Reset the selected area back to the original poster ---- */
+function areaBlocks() {
+  const b = selBlock(); if (b) return [b];
+  return S.sel && S.sel.rect ? covered(S.sel.rect) : [];
+}
+function canResetArea() { return !!S.sel && areaBlocks().some(b => b.translated || b.deleted); }
+function resetArea() {
+  const list = areaBlocks().filter(b => b.translated || b.deleted);
+  if (!list.length) { say('This area is still the original. Nothing to reset.', 'info'); return; }
+  const drop = list.filter(b => b.custom).map(b => b.id);
+  list.filter(b => !b.custom).forEach(b => {
+    b.translated = null; b.lang = null; b.edited = false; b.review = false; b.deleted = false; initLayer(b);
+    if (b.autoStyle) { b.color = b.autoStyle.color.slice(); b.bold = b.autoStyle.bold; b.align = b.autoStyle.align; }
+  });
+  if (drop.length) S.blocks = S.blocks.filter(b => !drop.includes(b.id));
+  if (selBlock()) { $('trTxt').value = ''; S.trDirty = false; S.last = null; syncStyle(); } else clearSel();
+  say('This area is back to the original poster.', 'ok');
+  render();
+}
+/* ---- Delete the text in the selected area (box or detected text) ---- */
+function deleteArea() {
+  if (!S.src) return;
+  if (!S.sel) { say('Select an area first: click a detected text, or drag a box around the text you want to delete.', 'warn'); return; }
+  S.blocks = S.blocks || [];
+  const wipe = b => { b.translated = null; b.lang = null; b.edited = false; b.review = false; b.deleted = true; };
+  const b = selBlock();
+  if (b) { wipe(b); }
+  else {
+    const rect = clampRect(S.sel.rect);
+    covered(rect).forEach(wipe);
+    // also wipe the whole box, so text the reader never detected is removed too
+    const nb = {id:S.nextId++, rect, english:'', translated:null, lang:null, edited:false, custom:true, deleted:true, review:false, lines:[{...rect}]};
+    nb.lineH = Math.min(rect.h, 40);
+    styleBlock(nb); nb.base = Math.min(rect.h * 0.9, Math.max(14, S.w * 0.045)); initLayer(nb);
+    S.blocks.push(nb);
+  }
+  $('trTxt').value = ''; S.trDirty = false; S.last = null; $('sugg').innerHTML = '';
+  say('Text deleted from this area. Use “Reset area to original” to bring it back, or type a translation and click Translate area to put new text here.', 'ok');
+  syncStyle(); render();
+}
+function setTab(t) {
+  S.tab = t;
+  $('tabEdit').hidden = t !== 'edit'; $('tabFont').hidden = t !== 'font';
+  $('tEdit').classList.toggle('on', t === 'edit' && !!S.sel);
+  $('tFont').classList.toggle('on', t === 'font' && !!S.sel);
+}
+function showPanel() { $('panel').hidden = false; setTab(S.tab || 'edit'); }
+function hidePanel() { $('panel').hidden = true; $('tEdit').classList.remove('on'); $('tFont').classList.remove('on'); }
+function openTab(t) {
+  if (!S.sel) { say('Select an area first: click any text on the poster, or drag a box around it.', 'warn'); return; }
+  showPanel(); setTab(t);
+  if (t === 'edit') $('trTxt').focus();
+}
+
+/* ---- Font options: only fonts actually installed on this device are listed ---- */
+const FONT_CANDIDATES = {
+  hi: ['Noto Sans Devanagari', 'Noto Serif Devanagari', 'Nirmala UI', 'Mangal', 'Kokila', 'Aparajita', 'Utsaah', 'Kohinoor Devanagari', 'Devanagari Sangam MN', 'Devanagari MT', 'ITF Devanagari', 'Lohit Devanagari', 'Hind', 'Mukta'],
+  kn: ['Noto Sans Kannada', 'Noto Serif Kannada', 'Nirmala UI', 'Tunga', 'Kannada Sangam MN', 'Lohit Kannada'],
+  te: ['Noto Sans Telugu', 'Noto Serif Telugu', 'Nirmala UI', 'Gautami', 'Vani', 'Telugu Sangam MN', 'Lohit Telugu'],
+  ta: ['Noto Sans Tamil', 'Noto Serif Tamil', 'Nirmala UI', 'Latha', 'Vijaya', 'Tamil Sangam MN', 'InaiMathi', 'Lohit Tamil'],
+  bn: ['Noto Sans Bengali', 'Noto Serif Bengali', 'Nirmala UI', 'Vrinda', 'Shonar Bangla', 'Bangla Sangam MN', 'Lohit Bengali'],
+  gu: ['Noto Sans Gujarati', 'Noto Serif Gujarati', 'Nirmala UI', 'Shruti', 'Gujarati Sangam MN', 'Lohit Gujarati']
+};
+FONT_CANDIDATES.mr = FONT_CANDIDATES.hi;
+const fontCache = {};
+function hasFont(name, sample) {
+  const w = f => { measureCtx.font = '40px ' + f; return measureCtx.measureText(sample).width; };
+  const q = '"' + name + '"';
+  return w(q + ',monospace') !== w('monospace') || w(q + ',serif') !== w('serif');
+}
+function installedFonts(code) {
+  if (!fontCache[code]) { const L = langOf(code); fontCache[code] = (FONT_CANDIDATES[code] || []).filter(f => { try { return hasFont(f, L.native + ' Aa'); } catch (_) { return false; } }); }
+  return fontCache[code];
+}
+function fillFonts(code) {
+  const sel = $('stFont'); if (sel.dataset.lang === code) return;
+  sel.innerHTML = ''; sel.add(new Option('Sans-serif (default)', 'sans')); sel.add(new Option('Serif', 'serif'));
+  installedFonts(code).forEach(f => sel.add(new Option(f, f)));
+  sel.dataset.lang = code;
+}
+function syncStyle() {
+  const b = selBlock(), ok = !!(b && b.translated);
+  $('styleSet').disabled = !ok; $('fontHint').hidden = ok;
+  if (!ok) return;
+  fillFonts(b.lang || S.lang);
+  const fs = $('stFont');
+  if (![...fs.options].some(o => o.value === b.family)) fs.add(new Option(b.family, b.family));
+  fs.value = b.family;
+  $('stSize').value = Math.round(b.size * 10) / 10; $('stColor').value = rgbHex(b.color);
+  $('stAlign').value = b.align; $('stLh').value = b.lh;
+  $('stBold').checked = b.bold; $('stItalic').checked = b.italic;
+}
+function onStyle() {
+  const b = selBlock(); if (!b || !b.translated) return;
+  const sz = parseFloat($('stSize').value);
+  if (sz >= 4 && Math.abs(sz - b.size) > 0.01) { b.size = sz; b.userSized = true; }
+  b.color = hexRgb($('stColor').value); b.align = $('stAlign').value; b.family = $('stFont').value;
+  const lh = parseFloat($('stLh').value); if (lh >= 0.8) b.lh = lh;
+  b.bold = $('stBold').checked; b.italic = $('stItalic').checked;
+  render(true);
+}
+
+/* ===================== Upload ===================== */
+function handleFile(file) {
+  if (!file) return;
+  const ok = /^image\/(png|jpeg|webp)$/.test(file.type) || /\.(png|jpe?g|webp)$/i.test(file.name);
+  if (!ok) { say('Unsupported file. Please upload a PNG, JPG, JPEG or WebP image.', 'error'); return; }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    if (!img.naturalWidth || !img.naturalHeight) { URL.revokeObjectURL(url); say('This image could not be read.', 'error'); return; }
+    if (S.url) URL.revokeObjectURL(S.url);
+    S.url = url;
+    const sc = Math.min(1, 8000 / Math.max(img.naturalWidth, img.naturalHeight));
+    S.w = Math.round(img.naturalWidth * sc); S.h = Math.round(img.naturalHeight * sc);
+    const c = document.createElement('canvas'); c.width = S.w; c.height = S.h;
+    const x = c.getContext('2d', {willReadFrequently:true}); x.drawImage(img, 0, 0, S.w, S.h);
+    S.src = c; S.sctx = x;
+    S.bg = document.createElement('canvas'); S.bg.width = S.w; S.bg.height = S.h;
+    S.detected = null; S.blocks = null; S.sel = null; S.outLang = null; S.trDirty = false;
+    hidePanel(); $('ocrHelp').hidden = true;
+    say(sc < 1 ? 'Large poster: a working copy scaled to ' + S.w + '×' + S.h + ' is used for translation and download.' : '', 'info');
+    render();
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); say('This file could not be read as an image.', 'error'); };
+  img.src = url;
+}
+
+/* ===================== Text detection engines (modular) =====================
+   Add one with: PosterTranslator.registerOcrEngine({id, label, available():Promise<bool>,
+   detect(canvas,onProgress):Promise<[{text,x,y,w,h}]>}) */
+const OCR_ENGINES = [];
+function registerOcrEngine(e) { OCR_ENGINES.push(e); }
+
+registerOcrEngine({
+  id: 'browser-text-detector', label: 'Browser text detector',
+  async available() {
+    if (!('TextDetector' in window)) return false;
+    try { const d = new TextDetector(); await d.detect(document.createElement('canvas')); return true; }
+    catch (e) { return !(e && e.name === 'NotSupportedError'); }
+  },
+  async detect(canvas) {
+    const res = await new TextDetector().detect(canvas);
+    return res.map(r => ({text: r.rawValue || '', x: r.boundingBox.x, y: r.boundingBox.y, w: r.boundingBox.width, h: r.boundingBox.height}));
+  }
+});
+function filterOcrWords(mapped) {
+  const ok = l => l.conf >= 50 && (l.text.length > 1 || l.conf >= 85);
+  const sure = mapped.filter(ok);
+  if (!sure.length) { const some = mapped.filter(l => l.conf >= 30); return some.length ? some : mapped; }
+  // rescue real-looking words the reader was unsure about, but only next to confident text
+  const near = (a, b) => {
+    const m = Math.max(a.h, b.h), gx = Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w), gy = Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h);
+    return gx < 1.3 * m && gy < 1.0 * m;
+  };
+  const word = /^[A-Za-z][A-Za-z.,:;*!?'"”“’)(-]*$/;
+  const rescue = mapped.filter(l => !ok(l) && word.test(l.text) && (l.text.match(/[A-Za-z]/g) || []).length >= 3 && sure.some(x => near(l, x)));
+  // a footnote asterisk is often read as a closing quote: "visits.”" -> "visits.*"
+  const fixStar = l => /^[^“"]*[A-Za-z.][”"]$/.test(l.text) ? {...l, text: l.text.slice(0, -1) + '*'} : l;
+  return sure.concat(rescue).map(fixStar);
+}
+const TESS_ENGINE = {
+  id: 'tesseract-cdn', label: 'Tesseract.js OCR',
+  async available() { return typeof Tesseract !== 'undefined'; },
+  async detect(canvas, onProgress) {
+    // Upscale so small poster text is easier to read; coordinates are mapped back below.
+    const f = Math.min(3, Math.max(1, 2200 / Math.max(canvas.width, canvas.height)));
+    let img = canvas;
+    if (f > 1.05) {
+      img = document.createElement('canvas');
+      img.width = Math.round(canvas.width * f); img.height = Math.round(canvas.height * f);
+      const c = img.getContext('2d'); c.imageSmoothingQuality = 'high'; c.drawImage(canvas, 0, 0, img.width, img.height);
+    }
+    const worker = await Tesseract.createWorker('eng', 1, {logger: m => { if (m.status === 'recognizing text' && onProgress) onProgress(m.progress); }});
+    try {
+      const {data} = await worker.recognize(img);
+      let items = data.words && data.words.length ? data.words : [];
+      if (!items.length) items = data.lines && data.lines.length ? data.lines : [];
+      if (!items.length) for (const b of data.blocks || []) for (const p of b.paragraphs || []) for (const l of p.lines || []) items.push(l);
+      const mapped = items.filter(l => l && l.bbox && (l.text || '').trim()).map(l => ({
+        text: l.text.trim(), conf: l.confidence == null ? 100 : l.confidence,
+        x: l.bbox.x0 / f, y: l.bbox.y0 / f, w: (l.bbox.x1 - l.bbox.x0) / f, h: (l.bbox.y1 - l.bbox.y0) / f
+      }));
+      return filterOcrWords(mapped);
+    } finally { await worker.terminate(); }
+  }
+};
+async function loadTesseract() {
+  if (typeof Tesseract === 'undefined') {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      s.onload = res; s.onerror = () => rej(new Error('could not download the OCR library (are you online?)'));
+      document.head.appendChild(s);
+    });
+  }
+  if (!OCR_ENGINES.some(e => e.id === TESS_ENGINE.id)) registerOcrEngine(TESS_ENGINE);
+}
+async function availableOcr() {
+  const out = [];
+  for (const e of OCR_ENGINES) { try { if (await e.available()) out.push(e); } catch (_) {} }
+  return out;
+}
+function showOcrHelp(show, why) {
+  const h = $('ocrHelp'); h.hidden = !show; if (!show) return;
+  h.innerHTML = '';
+  h.append((why || 'Automatic text detection is not built into this browser.') + ' You can ');
+  const a = document.createElement('a'); a.href = '#'; a.textContent = 'enable optional OCR (downloads Tesseract.js from a CDN; your poster stays on this device)';
+  a.addEventListener('click', async ev => {
+    ev.preventDefault();
+    try { say('Downloading the OCR library…'); await loadTesseract(); h.hidden = true; say('OCR engine ready. Click Translate to detect and translate the poster text.', 'ok'); }
+    catch (err) { say('OCR could not be enabled: ' + err.message, 'error'); }
+  });
+  h.append(a); h.append(', or drag a box around any text on the poster and type its translation.');
+}
+
+/* ===================== Text blocks (detected text layers) ===================== */
+function clampRect(r) {
+  const x = Math.max(0, Math.min(S.w - 1, r.x)), y = Math.max(0, Math.min(S.h - 1, r.y));
+  return {x, y, w: Math.max(1, Math.min(S.w - x, r.w)), h: Math.max(1, Math.min(S.h - y, r.h))};
+}
+const colorDist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+function mergeRows(items) {
+  const sorted = items.slice().sort((a, b) => a.x - b.x), out = [];
+  for (const l of sorted) {
+    const p = out.find(o => {
+      const ov = Math.min(o.y + o.h, l.y + l.h) - Math.max(o.y, l.y);
+      const gap = l.x - (o.x + o.w);
+      return ov > 0.55 * Math.min(o.h, l.h) && gap >= -0.3 * o.h && gap < 0.9 * Math.max(o.h, l.h);
+    });
+    if (p) {
+      const x1 = Math.max(p.x + p.w, l.x + l.w), y0 = Math.min(p.y, l.y), y1 = Math.max(p.y + p.h, l.y + l.h);
+      p.text += ' ' + l.text; p.w = x1 - p.x; p.y = y0; p.h = y1 - y0;
+    } else out.push({...l});
+  }
+  return out;
+}
+function median(a) { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : 0; }
+function baseSize(b) {
+  if (b.lines.length > 1) {
+    const ys = b.lines.map(l => l.y).sort((a, c) => a - c), ps = [];
+    for (let i = 1; i < ys.length; i++) ps.push(ys[i] - ys[i - 1]);
+    return Math.max(6, median(ps) / 1.3);
+  }
+  // a line box only spans the glyphs that are present: capitals/ascenders and descenders change its height
+  const t = b.english || '', asc = /[A-Z0-9bdfhklt]/.test(t), desc = /[gjpqy,;]/.test(t);
+  const k = asc && desc ? 0.95 : asc ? 0.73 : desc ? 0.7 : 0.52;
+  return Math.max(6, Math.min(b.lineH * 1.6, b.lineH / k));
+}
+function initLayer(b) {
+  b.lh = 1.3; b.family = 'sans'; b.italic = false; b.userSized = false; b.moved = false;
+  const pad = b.custom ? 0 : Math.round(b.rect.w * 0.03);
+  const x = Math.max(0, b.rect.x - pad);
+  b.box = {x, y: b.rect.y, w: Math.min(S.w - x, b.rect.w + 2 * pad)};
+  b.size = b.base;
+}
+function makeBlocks(items) {
+  const maxH = S.h * 0.2;
+  const clean = items.map(l => ({...clampRect(l), text: (l.text || '').replace(/\s+/g, ' ').trim()}))
+    .filter(l => l.text && /[A-Za-z0-9]/.test(l.text) && l.h < maxH && l.w / l.h < 40);
+  const rows = mergeRows(clean)
+    .filter(l => (l.text.match(/[A-Za-z0-9]/g) || []).length >= 2 && l.w > 6 && l.h > 5)
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+  rows.forEach(l => { const t = {rect:{x:l.x, y:l.y, w:l.w, h:l.h}, lineH:l.h}; measureColors(t); l.bg = t.bg; });
+  const groups = [];
+  for (const l of rows) {
+    const g = groups.find(g => {
+      const p = g[g.length - 1];
+      const mw = Math.max(p.w, l.w), mh = Math.max(p.h, l.h);
+      const ov = Math.min(p.x + p.w, l.x + l.w) - Math.max(p.x, l.x);
+      const gap = l.y - (p.y + p.h), hr = l.h / p.h;
+      const leftAligned = Math.abs(p.x - l.x) < 0.1 * mw + 6;
+      const centred = Math.abs((p.x + p.w / 2) - (l.x + l.w / 2)) < 0.08 * mw + 6;
+      return ov > 0.4 * Math.min(p.w, l.w) && gap < 0.65 * mh && gap > -0.3 * p.h &&
+             hr > 0.65 && hr < 1.5 && (leftAligned || centred) && colorDist(p.bg, l.bg) < 45;
+    });
+    if (g) g.push(l); else groups.push([l]);
+  }
+  const blocks = groups.map(g => {
+    const x0 = Math.min(...g.map(l => l.x)), y0 = Math.min(...g.map(l => l.y));
+    const x1 = Math.max(...g.map(l => l.x + l.w)), y1 = Math.max(...g.map(l => l.y + l.h));
+    const b = {
+      id: 0, rect: {x:x0, y:y0, w:x1 - x0, h:y1 - y0},
+      lines: g.map(l => ({x:l.x, y:l.y, w:l.w, h:l.h})),
+      english: g.map(l => l.text).join(' ').replace(/\s+/g, ' ').trim(),
+      lineH: g.reduce((a, l) => a + l.h, 0) / g.length,
+      translated: null, lang: null, edited: false, custom: false, review: false
+    };
+    styleBlock(b); return b;
+  });
+  const med = median(blocks.map(b => b.lineH));
+  blocks.forEach(b => { b.bold = b.ink > 0.2 || b.lineH >= 1.35 * med; b.base = baseSize(b); initLayer(b); b.autoStyle = {color:b.color.slice(), bold:b.bold, align:b.align}; });
+  return blocks;
+}
+function guessAlign(b) {
+  const r = b.rect, ls = b.lines;
+  if (ls.length > 1) {
+    const sp = f => Math.max(...ls.map(f)) - Math.min(...ls.map(f));
+    const left = sp(l => l.x), cen = sp(l => l.x + l.w / 2), right = sp(l => l.x + l.w);
+    if (left <= 0.04 * r.w) return 'left';
+    if (cen <= 0.06 * r.w && cen <= right) return 'center';
+    if (right <= 0.04 * r.w) return 'right';
+    return 'left';
+  }
+  return Math.abs(r.x + r.w / 2 - S.w / 2) < 0.03 * S.w ? 'center' : 'left';
+}
+function measureColors(b) {
+  const r = b.rect;
+  const m = Math.max(3, Math.min(10, Math.round(b.lineH * 0.18)));
+  const x0 = Math.max(0, Math.floor(r.x - m)), y0 = Math.max(0, Math.floor(r.y - m));
+  const x1 = Math.min(S.w, Math.ceil(r.x + r.w + m)), y1 = Math.min(S.h, Math.ceil(r.y + r.h + m));
+  const w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
+  const d = S.sctx.getImageData(x0, y0, w, h).data;
+  const ix0 = Math.round(r.x) - x0, iy0 = Math.round(r.y) - y0, ix1 = ix0 + Math.round(r.w), iy1 = iy0 + Math.round(r.h);
+  let br = 0, bg = 0, bb = 0, n = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (x >= ix0 && x < ix1 && y >= iy0 && y < iy1) continue;
+    const i = (y * w + x) * 4; br += d[i]; bg += d[i + 1]; bb += d[i + 2]; n++;
+  }
+  const bgc = n ? [br / n, bg / n, bb / n] : [255, 255, 255];
+  b.bg = bgc;
+  const dist2 = i => (d[i] - bgc[0]) ** 2 + (d[i + 1] - bgc[1]) ** 2 + (d[i + 2] - bgc[2]) ** 2;
+  let maxD = 0;
+  for (let y = Math.max(0, iy0); y < Math.min(h, iy1); y++) for (let x = Math.max(0, ix0); x < Math.min(w, ix1); x++) {
+    const v = dist2((y * w + x) * 4); if (v > maxD) maxD = v;
+  }
+  let tr = 0, tg = 0, tb = 0, tn = 0, thick = 0, inner = 0;
+  if (maxD >= 900) {
+    const thrC = Math.max(1600, 0.8 * maxD), thrB = Math.max(1600, 0.45 * maxD);
+    for (let y = Math.max(0, iy0); y < Math.min(h, iy1); y++) for (let x = Math.max(0, ix0); x < Math.min(w, ix1); x++) {
+      inner++; const i = (y * w + x) * 4, dd = dist2(i);
+      if (dd >= thrC) { tr += d[i]; tg += d[i + 1]; tb += d[i + 2]; tn++; }
+      if (dd >= thrB) thick++;
+    }
+  }
+  if (tn > 8) { b.color = [tr / tn, tg / tn, tb / tn]; b.ink = thick / Math.max(1, inner); }
+  else {
+    const lum = 0.299 * bgc[0] + 0.587 * bgc[1] + 0.114 * bgc[2];
+    b.color = lum > 140 ? [20, 20, 20] : [250, 250, 250]; b.ink = 0;
+  }
+}
+function styleBlock(b) { measureColors(b); b.align = guessAlign(b); edgesFor(b); }
+function smoothRows(rows) {
+  if (!rows) return null;
+  return rows.map((_, i) => {
+    let r = 0, g = 0, bl = 0, c = 0;
+    for (let k = Math.max(0, i - 2); k <= Math.min(rows.length - 1, i + 2); k++) { r += rows[k][0]; g += rows[k][1]; bl += rows[k][2]; c++; }
+    return [r / c, g / c, bl / c];
+  });
+}
+function edgesFor(b) {
+  const e = Math.max(3, Math.round(b.lineH * 0.2));
+  const x0 = Math.max(0, Math.floor(b.rect.x - e)), y0 = Math.max(0, Math.floor(b.rect.y - e));
+  const x1 = Math.min(S.w, Math.ceil(b.rect.x + b.rect.w + e)), y1 = Math.min(S.h, Math.ceil(b.rect.y + b.rect.h + e));
+  const er = {x:x0, y:y0, w:Math.max(1, x1 - x0), h:Math.max(1, y1 - y0)};
+  const hStrip = (sx, sw) => {
+    if (sw <= 0) return null;
+    const d = S.sctx.getImageData(sx, er.y, sw, er.h).data, rows = [];
+    for (let y = 0; y < er.h; y++) {
+      let r = 0, g = 0, bl = 0;
+      for (let k = 0; k < sw; k++) { const i = (y * sw + k) * 4; r += d[i]; g += d[i + 1]; bl += d[i + 2]; }
+      rows.push([r / sw, g / sw, bl / sw]);
+    }
+    return rows;
+  };
+  const vStrip = (sy, sh) => {
+    if (sh <= 0) return null;
+    const d = S.sctx.getImageData(er.x, sy, er.w, sh).data, cols = [];
+    for (let x = 0; x < er.w; x++) {
+      let r = 0, g = 0, bl = 0;
+      for (let k = 0; k < sh; k++) { const i = (k * er.w + x) * 4; r += d[i]; g += d[i + 1]; bl += d[i + 2]; }
+      cols.push([r / sh, g / sh, bl / sh]);
+    }
+    return cols;
+  };
+  const L = hStrip(x0 - Math.min(3, x0), Math.min(3, x0)), R = hStrip(x1, Math.min(3, S.w - x1));
+  const T = vStrip(y0 - Math.min(3, y0), Math.min(3, y0)), B = vStrip(y1, Math.min(3, S.h - y1));
+  const df = (p, q) => (Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]) + Math.abs(p[2] - q[2])) / 3;
+  const rough = a => { if (!a || a.length < 2) return 0; let t = 0; for (let i = 1; i < a.length; i++) t += df(a[i], a[i - 1]); return t / (a.length - 1); };
+  b.complex = Math.max(rough(L), rough(R), rough(T), rough(B)) > 9;
+  b.edges = {er, L: smoothRows(L), R: smoothRows(R), T: smoothRows(T), B: smoothRows(B)};
+}
+function cloneBlock(b) {
+  return {...b, id: S.nextId++, rect: {...b.rect}, box: {...b.box}, color: b.color.slice(),
+          translated: null, lang: null, edited: false, review: false, deleted: false, userSized: false, moved: false, size: b.base};
+}
+
+/* ===================== Terminology / masking ===================== */
+function buildMask(text, li, keepList) {
+  const src = text.replace(/\s+/g, ' ').trim();
+  const letters = src.replace(/[^A-Za-z]/g, '');
+  const allCaps = letters.length >= 6 && letters.replace(/[^A-Z]/g, '').length / letters.length >= 0.8;
+  const keepSrc = keepList.length
+    ? '(?<!\\w)(?:' + keepList.slice().sort((a, b) => b.length - a.length).map(escRx).join('|') + ')(?!\\w)' : '(?!)';
+  const rx = new RegExp('(' + keepSrc + ')|(' + GLOSS_SRC + ')|(' + PROT_SRC + ')', 'gi');
+  let segs = [], last = 0, m;
+  while ((m = rx.exec(src))) {
+    if (m[0] === '') { rx.lastIndex++; continue; }
+    let val = m[0];
+    if (m[3] !== undefined) {
+      const tail = val.match(/[.,:;+\/-]+$/);
+      if (tail) { val = val.slice(0, val.length - tail[0].length); rx.lastIndex -= tail[0].length; }
+      if (!val) continue;
+    }
+    if (m.index > last) segs.push({t:'text', v:src.slice(last, m.index)});
+    if (m[2] !== undefined) {
+      const k = normKey(val), row = GL.get(k) || GL.get(k.replace(/s$/, ''));
+      segs.push({t:'fix', v: row ? row[li] : val});
+    } else segs.push({t:'fix', v:val});
+    last = m.index + val.length;
+  }
+  if (last < src.length) segs.push({t:'text', v:src.slice(last)});
+  if (!allCaps) {
+    const out = [];
+    for (const s of segs) {
+      if (s.t !== 'text') { out.push(s); continue; }
+      const re = /\b[A-Z]{2,}[A-Za-z]*\b|\b[A-Z][a-z]+[A-Z][A-Za-z]*\b/g; let p = 0, mm;
+      while ((mm = re.exec(s.v))) {
+        if (CAPS_STOP.has(mm[0])) continue;
+        if (mm.index > p) out.push({t:'text', v:s.v.slice(p, mm.index)});
+        out.push({t:'fix', v:mm[0]}); p = mm.index + mm[0].length;
+      }
+      if (p < s.v.length) out.push({t:'text', v:s.v.slice(p)});
+    }
+    segs = out;
+  }
+  let n = 0;
+  const masked = segs.map(s => s.t === 'fix' ? '[' + (++n) + ']' : (allCaps ? s.v.toLowerCase() : s.v)).join('');
+  return {segs, masked, fixes: segs.filter(s => s.t === 'fix').map(s => s.v)};
+}
+const ZERO_BASES = [0x966, 0x9E6, 0xAE6, 0xBE6, 0xC66, 0xCE6, 0x30];
+function digitVal(ch) {
+  const cp = ch.codePointAt(0);
+  for (const z of ZERO_BASES) if (cp >= z && cp < z + 10) return String(cp - z);
+  return ch;
+}
+function restore(out, fixes) {
+  const norm = out.replace(/[\[［]\s*([\p{Nd}]+)\s*[\]］]/gu, (_, d) => '[' + [...d].map(digitVal).join('') + ']');
+  const found = [...norm.matchAll(/\[(\d+)\]/g)].map(x => +x[1]);
+  if (found.length !== fixes.length) return null;
+  for (let i = 1; i <= fixes.length; i++) if (found.filter(v => v === i).length !== 1) return null;
+  return norm.replace(/\[(\d+)\]/g, (_, d) => fixes[+d - 1]).replace(/\s+/g, ' ').trim();
+}
+async function translateBlockText(engine, text, lang) {
+  const keepList = $('keep').value.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+  const {segs, masked, fixes} = buildMask(text, LI[lang], keepList);
+  if (!segs.some(s => s.t === 'text' && /[A-Za-z]/.test(s.v))) return {text: segs.map(s => s.v).join('').trim(), review:false};
+  const out = await engine.translate(masked);
+  if (!fixes.length) return {text: out.trim(), review:false};
+  const restored = restore(out, fixes);
+  if (restored) return {text: restored, review:false};
+  const parts = [];
+  for (const s of segs) {
+    if (s.t === 'fix') parts.push(s.v);
+    else if (/[A-Za-z]/.test(s.v)) {
+      const lead = s.v.match(/^\s*/)[0], trail = s.v.match(/\s*$/)[0];
+      parts.push(lead + (await engine.translate(s.v.trim())) + trail);
+    } else parts.push(s.v);
+  }
+  return {text: parts.join('').replace(/\s+/g, ' ').trim(), review:true};
+}
+
+/* ===================== Translation engines (modular) =====================
+   Add one with: PosterTranslator.registerTranslationEngine({id, label, availability(lang),
+   create(lang,onProgress) -> {translate(text)}, unavailableReason(lang)}) */
+const TR_ENGINES = [];
+function registerTranslationEngine(e) { TR_ENGINES.push(e); }
+registerTranslationEngine({
+  id: 'chrome-translator', label: "the browser's built-in translator",
+  async availability(lang) {
+    if (!('Translator' in self)) return 'unavailable';
+    return Translator.availability({sourceLanguage:'en', targetLanguage:lang});
+  },
+  async create(lang, onProgress) {
+    return Translator.create({sourceLanguage:'en', targetLanguage:lang,
+      monitor(m) { m.addEventListener('downloadprogress', e => onProgress && onProgress(e.loaded)); }});
+  },
+  unavailableReason(lang) {
+    return !('Translator' in self)
+      ? 'This browser has no built-in translation engine (recent desktop Chrome provides one).'
+      : "The browser's built-in translator does not offer English → " + langOf(lang).name + ' on this device.';
+  }
+});
+const trCache = {};
+async function getTranslator(lang) {
+  if (trCache[lang]) return trCache[lang];
+  let reason = '';
+  for (const e of TR_ENGINES) {
+    let av = 'unavailable';
+    try { av = await e.availability(lang); } catch (_) {}
+    if (av === 'unavailable') { reason = e.unavailableReason ? e.unavailableReason(lang) : reason; continue; }
+    try {
+      const inst = await e.create(lang, p => say('Downloading the translation model… ' + Math.round(p * 100) + '%'));
+      return (trCache[lang] = {engine:inst});
+    } catch (err) { reason = 'The translation engine could not start (' + err.message + ').'; }
+  }
+  return {engine:null, reason: reason || 'No translation engine is available.'};
+}
+window.PosterTranslator = {registerOcrEngine, registerTranslationEngine, filterOcrWords};
+
+/* ===================== Text layers: layout, fitting, painting ===================== */
+function familyOf(b) {
+  const L = langOf(b.lang || S.lang);
+  if (b.family === 'serif') return L.ser + ',serif';
+  if (b.family && b.family !== 'sans') return '"' + b.family + '",' + L.fam + ',system-ui,sans-serif';
+  return L.fam + ',system-ui,sans-serif';
+}
+function fontStr(b, size) { return (b.italic ? 'italic ' : '') + (b.bold ? 700 : 400) + ' ' + size + 'px ' + familyOf(b); }
+function wrapText(ctx, text, maxW) {
+  const words = text.split(/\s+/).filter(Boolean), lines = []; let cur = '';
+  for (const w of words) {
+    const t = cur ? cur + ' ' + w : w;
+    if (!cur || ctx.measureText(t).width <= maxW) cur = t; else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur); return lines;
+}
+function layoutBlock(ctx, b) {
+  ctx.font = fontStr(b, b.size);
+  const lines = wrapText(ctx, b.translated || '', b.box.w), lh = b.size * b.lh;
+  b.layout = {lines, lh, h: lines.length * lh};
+  return b.layout;
+}
+// Choose a font size close to the original, shrinking only as much as needed (never below 65%).
+function fitBlock(b) {
+  let size = Math.max(8, b.base); const min = Math.max(8, size * 0.6), maxH = Math.max(b.rect.h * 1.1, b.base * 1.3 * b.lines.length * 1.05);
+  let lines;
+  for (;;) {
+    measureCtx.font = fontStr({...b, bold:b.bold, italic:b.italic}, size);
+    lines = wrapText(measureCtx, b.translated, b.box.w);
+    const mw = Math.max(...lines.map(l => measureCtx.measureText(l).width));
+    if ((lines.length * size * b.lh <= maxH && mw <= b.box.w * 1.01) || size <= min) break;
+    size -= Math.max(0.5, size * 0.04);
+  }
+  b.size = size;
+  if (!b.moved) {
+    const h = lines.length * size * b.lh;
+    b.box.y = Math.max(0, Math.min(S.h - h, b.rect.y + b.rect.h / 2 - h / 2));
+  }
+}
+function eraseBlock(ctx, b) {
+  // Fill the old text area from the nearest pixels that are NOT part of any detected text,
+  // so neighbouring lines never smear into the fill.
+  const er = b.edges.er, W = er.w, H = er.h;
+  const pad = Math.max(14, Math.round(b.lineH * 2.5)), cap = pad * 2;
+  const rx = Math.max(0, er.x - pad), ry = Math.max(0, er.y - pad);
+  const rw = Math.min(S.w, er.x + W + pad) - rx, rh = Math.min(S.h, er.y + H + pad) - ry;
+  const src = S.sctx.getImageData(rx, ry, rw, rh).data;
+  const mask = new Uint8Array(rw * rh);
+  for (const o of S.blocks || []) {
+    const e = o.edges.er;
+    const x0 = Math.max(rx, e.x), y0 = Math.max(ry, e.y), x1 = Math.min(rx + rw, e.x + e.w), y1 = Math.min(ry + rh, e.y + e.h);
+    for (let y = y0; y < y1; y++) mask.fill(1, (y - ry) * rw + (x0 - rx), (y - ry) * rw + (x1 - rx));
+  }
+  const out = ctx.createImageData(W, H), d = out.data, ox = er.x - rx, oy = er.y - ry;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const px = ox + x, py = oy + y;
+    let sr = 0, sg = 0, sb = 0, sw = 0;
+    const take = (qx, qy, n) => { const i = (qy * rw + qx) * 4, w = 1 / (n * n); sr += src[i] * w; sg += src[i + 1] * w; sb += src[i + 2] * w; sw += w; };
+    for (let k = px - 1, n = 1; k >= 0 && n <= cap; k--, n++) if (!mask[py * rw + k]) { take(k, py, n); break; }
+    for (let k = px + 1, n = 1; k < rw && n <= cap; k++, n++) if (!mask[py * rw + k]) { take(k, py, n); break; }
+    for (let k = py - 1, n = 1; k >= 0 && n <= cap; k--, n++) if (!mask[k * rw + px]) { take(px, k, n); break; }
+    for (let k = py + 1, n = 1; k < rh && n <= cap; k++, n++) if (!mask[k * rw + px]) { take(px, k, n); break; }
+    const i = (y * W + x) * 4;
+    if (sw) { d[i] = sr / sw; d[i + 1] = sg / sw; d[i + 2] = sb / sw; } else { d[i] = b.bg[0]; d[i + 1] = b.bg[1]; d[i + 2] = b.bg[2]; }
+    d[i + 3] = 255;
+  }
+  // soften 1-2px streaks left by undetected specks: horizontal box blur over the filled area only
+  const r = Math.min(Math.floor(W / 2) - 1, Math.max(2, Math.round(b.lineH * 0.3)));
+  if (r >= 1) {
+    const tmp = new Uint8ClampedArray(d.length);
+    for (let y = 0; y < H; y++) for (let c = 0; c < 3; c++) {
+      let acc = 0, cnt = 0;
+      for (let x = -r; x <= r; x++) { const xx = Math.min(W - 1, Math.max(0, x)); acc += d[(y * W + xx) * 4 + c]; cnt++; }
+      for (let x = 0; x < W; x++) {
+        tmp[(y * W + x) * 4 + c] = acc / cnt;
+        const a = Math.min(W - 1, x + r + 1), z = Math.max(0, x - r);
+        acc += d[(y * W + a) * 4 + c] - d[(y * W + z) * 4 + c];
+      }
+    }
+    for (let i = 0; i < d.length; i += 4) { d[i] = tmp[i]; d[i + 1] = tmp[i + 1]; d[i + 2] = tmp[i + 2]; }
+  }
+  ctx.putImageData(out, er.x, er.y);
+}
+function rebuildBg() {
+  const ctx = S.bg.getContext('2d');
+  ctx.clearRect(0, 0, S.w, S.h); ctx.drawImage(S.src, 0, 0);
+  for (const b of S.blocks || []) if (b.translated || b.deleted) eraseBlock(ctx, b);
+}
+function textX(b) { return b.align === 'left' ? b.box.x : b.align === 'right' ? b.box.x + b.box.w : b.box.x + b.box.w / 2; }
+function paintText(ctx) {
+  for (const b of S.blocks || []) {
+    if (!b.translated) continue;
+    const L = layoutBlock(ctx, b), c = b.color.map(Math.round);
+    ctx.font = fontStr(b, b.size); ctx.fillStyle = 'rgb(' + c.join(',') + ')';
+    ctx.textBaseline = 'middle'; ctx.textAlign = b.align; ctx.lineJoin = 'round';
+    if (b.complex) {
+      const lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+      ctx.strokeStyle = lum > 140 ? 'rgba(0,0,0,.5)' : 'rgba(255,255,255,.5)'; ctx.lineWidth = b.size * 0.12;
+    }
+    const x = textX(b);
+    L.lines.forEach((ln, i) => {
+      const y = b.box.y + i * L.lh + L.lh / 2;
+      if (b.complex) ctx.strokeText(ln, x, y);
+      ctx.fillText(ln, x, y);
+    });
+  }
+}
+function render(fast) {
+  const out = $('out'), ov = $('ov');
+  if (!S.src) { $('wrap').hidden = true; $('ph').hidden = false; updateUi(); return; }
+  $('ph').hidden = true; $('wrap').hidden = false;
+  if (out.width !== S.w || out.height !== S.h) { out.width = ov.width = S.w; out.height = ov.height = S.h; }
+  if (!fast) rebuildBg();
+  const ctx = out.getContext('2d');
+  ctx.clearRect(0, 0, S.w, S.h); ctx.drawImage(S.bg, 0, 0);
+  paintText(ctx);
+  drawOverlay(); updateUi(); invalidateExport();
+}
+
+/* ===================== Selection and direct editing ===================== */
+function toImg(e) {
+  const r = $('ov').getBoundingClientRect();
+  return {x:(e.clientX - r.left) * S.w / r.width, y:(e.clientY - r.top) * S.h / r.height, k:S.w / r.width};
+}
+function hitRect(b) {
+  return b.translated && b.layout ? {x:b.box.x, y:b.box.y, w:b.box.w, h:b.layout.h} : b.rect;
+}
+function blockAt(x, y) {
+  let best = null;
+  for (const b of S.blocks || []) {
+    const r = hitRect(b);
+    if (x >= r.x - 4 && x <= r.x + r.w + 4 && y >= r.y - 4 && y <= r.y + r.h + 4)
+      if (!best || r.w * r.h < hitRect(best).w * hitRect(best).h) best = b;
+  }
+  return best;
+}
+function overlapFrac(a, b) {
+  const iw = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x), ih = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+  return iw > 0 && ih > 0 ? (iw * ih) / (a.w * a.h) : 0;
+}
+function covered(rect) {
+  const res = [];
+  for (const b of S.blocks || []) {
+    const r = hitRect(b), iw = Math.min(r.x + r.w, rect.x + rect.w) - Math.max(r.x, rect.x), ih = Math.min(r.y + r.h, rect.y + rect.h) - Math.max(r.y, rect.y);
+    if (iw > 0 && ih > 0 && (iw * ih) / (r.w * r.h) >= 0.5) res.push(b);
+  }
+  return res;
+}
+function selectBlock(b) { setSel({rect:null, blockId:b.id, covered:[], origEng:b.english}, b.english, b.translated || ''); }
+function selectRect(rect) {
+  const cov = covered(rect);
+  if (cov.length === 1) return selectBlock(cov[0]);
+  const eng = cov.slice().sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x).map(b => b.english).join(' ');
+  setSel({rect, blockId:null, covered:cov.map(b => b.id), origEng:eng}, eng, '');
+}
+function setSel(sel, eng, tr) {
+  S.sel = sel; S.trDirty = false; S.last = null;
+  $('engTxt').value = eng; $('trTxt').value = tr;
+  showPanel(); syncStyle(); drawOverlay(); updateUi(); refreshSugg();
+}
+function clearSel() { S.sel = null; S.trDirty = false; S.last = null; hidePanel(); $('sugg').innerHTML = ''; drawOverlay(); updateUi(); }
+function selRect() { const b = selBlock(); return b ? hitRect(b) : (S.sel ? S.sel.rect : null); }
+function handlesOf(r) { return {scale:{x:r.x + r.w, y:r.y + r.h}, resizeW:{x:r.x + r.w, y:r.y + r.h / 2}}; }
+function hitHandle(b, p) {
+  const hs = handlesOf(hitRect(b)), tol = 11 * p.k;
+  if (Math.hypot(p.x - hs.scale.x, p.y - hs.scale.y) <= tol) return 'scale';
+  if (Math.hypot(p.x - hs.resizeW.x, p.y - hs.resizeW.y) <= tol) return 'resizeW';
+  return null;
+}
+function drawOverlay() {
+  const ov = $('ov'); if (!S.src) return;
+  const c = ov.getContext('2d'); c.clearRect(0, 0, ov.width, ov.height);
+  const rect = ov.getBoundingClientRect(), k = rect.width ? S.w / rect.width : 1;
+  const box = (r, fill, dash) => {
+    c.lineWidth = Math.max(2, 2 * k); c.strokeStyle = '#00A86B'; c.setLineDash(dash ? [6 * k, 4 * k] : []);
+    if (fill) { c.fillStyle = 'rgba(0,168,107,.10)'; c.fillRect(r.x, r.y, r.w, r.h); }
+    c.strokeRect(r.x, r.y, r.w, r.h);
+  };
+  if (S.hover && !S.drag && !(S.sel && S.sel.blockId === S.hover.id)) { c.globalAlpha = .7; box(hitRect(S.hover), false, true); c.globalAlpha = 1; }
+  const sr = selRect();
+  if (sr) {
+    box(sr, true, false);
+    const b = selBlock();
+    if (b && b.translated) {
+      const hs = handlesOf(sr), s = 5.5 * k;
+      for (const h of Object.values(hs)) {
+        c.fillStyle = '#fff'; c.strokeStyle = '#00A86B'; c.lineWidth = Math.max(2, 2 * k); c.setLineDash([]);
+        c.fillRect(h.x - s, h.y - s, 2 * s, 2 * s); c.strokeRect(h.x - s, h.y - s, 2 * s, 2 * s);
+      }
+    }
+  }
+  if (S.drag && S.drag.mode === 'select' && S.drag.moved) {
+    const d = S.drag; box({x:Math.min(d.x0, d.x1), y:Math.min(d.y0, d.y1), w:Math.abs(d.x1 - d.x0), h:Math.abs(d.y1 - d.y0)}, true, true);
+  }
+}
+
+/* ===================== Translate action ===================== */
+async function onTranslate() {
+  if (S.busy) return;
+  if (!S.src) { say('Upload a poster first.', 'warn'); return; }
+  S.busy = true; updateUi();
+  try { S.sel ? await applySelection() : await translateAll(); }
+  catch (err) { say('Something went wrong: ' + (err && err.message ? err.message : err), 'error'); }
+  finally { S.busy = false; render(); }
+}
+async function translateAll() {
+  const lang = S.lang, L = langOf(lang);
+  let engines = [];
+  if (!S.detected) {
+    engines = await availableOcr();
+    if (!engines.length) { S.blocks = S.blocks || []; showOcrHelp(true); say('Text on this poster could not be detected automatically in this browser.', 'warn'); return; }
+  }
+  const tr = await getTranslator(lang);
+  if (!S.detected) {
+    say('Detecting text on the poster…');
+    let det = [], ran = [];
+    for (const e of engines) {
+      ran.push(e.label);
+      const lines = await e.detect(S.src, p => say('Detecting text… ' + Math.round(p * 100) + '%'));
+      det = makeBlocks(lines);
+      if (det.length) break;
+    }
+    if (!det.length) {
+      S.blocks = [];
+      if (!OCR_ENGINES.some(e => e.id === TESS_ENGINE.id)) showOcrHelp(true, 'The built-in detector (' + ran.join(', ') + ') found no text on this poster.');
+      say('Text detection ran (' + ran.join(', ') + ') but found no readable text. Drag a box around a text area and type its translation, or try another OCR engine.', 'warn');
+      return;
+    }
+    S.detected = det;
+  }
+  const have = S.blocks || [];
+  S.blocks = have.concat(S.detected.filter(d => !have.some(e => overlapFrac(d.rect, e.rect) > 0.4)).map(cloneBlock));
+  if (!S.blocks.length) { say('No text was detected on this poster. Drag a box around a text area and type its translation.', 'warn'); return; }
+  if (!tr.engine) {
+    say(tr.reason + ' Detected ' + S.blocks.length + ' text area(s): click one on the poster and type its translation, then click Translate.', 'warn');
+    return;
+  }
+  const todo = S.blocks.filter(b => !b.deleted && !(b.edited && b.lang === lang) && !(b.translated && b.lang === lang));
+  if (!todo.length) { say('All detected text is already translated to ' + L.name + '.', 'ok'); return; }
+  let done = 0, failed = 0, review = 0;
+  for (const b of todo) {
+    say('Translating text area ' + (done + failed + 1) + ' of ' + todo.length + '…');
+    try {
+      const r = await translateBlockText(tr.engine, b.english, lang);
+      b.translated = r.text; b.lang = lang; b.edited = false; b.review = r.review; if (r.review) review++; done++;
+      if (!b.userSized) fitBlock(b);
+    } catch (_) { failed++; }
+  }
+  S.outLang = lang; S.sel = null; hidePanel();
+  let msg = 'Translated ' + done + ' text area(s) into ' + L.name + '. Click any text to edit it, drag to move it, or use the style options.';
+  if (review) msg += ' ' + review + ' area(s) were translated in parts; please review them.';
+  if (failed) msg += ' ' + failed + ' area(s) could not be translated; select them and type the text.';
+  const cx = S.blocks.filter(b => b.complex && b.translated).length;
+  if (cx) msg += ' ' + cx + ' area(s) sit over busy backgrounds, so background restoration is approximate.';
+  say(msg, failed ? 'warn' : 'ok');
+}
+async function regionBlocks(engine, rect) {
+  const pad = 6, x = Math.max(0, Math.floor(rect.x - pad)), y = Math.max(0, Math.floor(rect.y - pad));
+  const w = Math.min(S.w - x, Math.ceil(rect.w + 2 * pad)), h = Math.min(S.h - y, Math.ceil(rect.h + 2 * pad));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(S.src, x, y, w, h, 0, 0, w, h);
+  const lines = await engine.detect(c, p => say('Reading the text inside the box… ' + Math.round(p * 100) + '%'));
+  return makeBlocks(lines.map(l => ({...l, x:l.x + x, y:l.y + y}))).filter(b => overlapFrac(b.rect, rect) >= 0.5);
+}
+// A box drawn on text that has not been read yet: read only that region, then translate only that region.
+async function translateRegion(sel, lang) {
+  const L = langOf(lang), rect = clampRect(sel.rect);
+  const engines = await availableOcr();
+  if (!engines.length) {
+    showOcrHelp(true);
+    say('The text in this box cannot be read automatically in this browser. Type the English text, or your own translation, in the panel and click Translate area.', 'warn');
+    return;
+  }
+  say('Reading the text inside the box…');
+  let found = [];
+  for (const e of engines) { found = await regionBlocks(e, rect); if (found.length) break; }
+  if (!found.length) { say('No readable text was found inside the box. Try a slightly larger box, or type the text in the panel.', 'warn'); return; }
+  const fresh = found.map(cloneBlock);
+  S.blocks = S.blocks.filter(b => !sel.covered.includes(b.id)).concat(fresh);
+  const eng = fresh.slice().sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x).map(b => b.english).join(' ');
+  const tr = await getTranslator(lang);
+  if (!tr.engine) {
+    setSel({rect, blockId:null, covered:fresh.map(b => b.id), origEng:eng}, eng, '');
+    say(tr.reason + ' The text in the box was read. Type your translation and click Translate area.', 'warn');
+    return;
+  }
+  let failed = 0, review = 0;
+  for (const b of fresh) {
+    try {
+      const r = await translateBlockText(tr.engine, b.english, lang);
+      b.translated = r.text; b.lang = lang; b.review = r.review; if (r.review) review++;
+      if (!b.userSized) fitBlock(b);
+    } catch (_) { failed++; }
+  }
+  S.outLang = lang;
+  const ok = fresh.filter(b => b.translated);
+  if (ok.length === 1 && fresh.length === 1) selectBlock(ok[0]); else clearSel();
+  let msg = 'Translated ' + ok.length + ' text area(s) inside the box into ' + L.name + '. The rest of the poster is untouched.';
+  if (review) msg += ' Some text was translated in parts; please review it.';
+  if (failed) msg += ' ' + failed + ' area(s) could not be translated; click them and type the text.';
+  say(msg, failed ? 'warn' : 'ok');
+}
+async function applySelection() {
+  const sel = S.sel, lang = S.lang, L = langOf(lang);
+  if (S.trDirty) commitTail();
+  const eng = $('engTxt').value.trim(), typed = $('trTxt').value.trim();
+  const block = selBlock();
+  S.blocks = S.blocks || [];
+  if (!block && !eng && !(S.trDirty && typed)) return translateRegion(sel, lang);
+  let result, review = false;
+  if (S.trDirty && typed) result = typed;
+  else {
+    if (!eng) { say('Enter the original English text for this area, or type the translated text.', 'warn'); return; }
+    const tr = await getTranslator(lang);
+    if (!tr.engine) { say(tr.reason + ' Type the translated text in the field and click Translate area to apply it.', 'warn'); return; }
+    const r = await translateBlockText(tr.engine, eng, lang); result = r.text; review = r.review;
+  }
+  if (block) {
+    block.deleted = false; block.english = eng || block.english; block.translated = result; block.lang = lang; block.edited = S.trDirty && !!typed; block.review = review;
+    if (!block.userSized) fitBlock(block);
+  } else {
+    const rect = clampRect(sel.rect);
+    const nb = {id:S.nextId++, rect, english:eng, translated:result, lang, edited:S.trDirty && !!typed, custom:true, review, lines:[{...rect}]};
+    nb.lineH = Math.min(rect.h, 40);
+    styleBlock(nb); nb.bold = nb.ink > 0.2;
+    nb.base = Math.min(rect.h * 0.9, Math.max(14, S.w * 0.045));
+    initLayer(nb); fitBlock(nb);
+    S.blocks = S.blocks.filter(b => !sel.covered.includes(b.id)); S.blocks.push(nb);
+    sel.blockId = nb.id; sel.covered = []; sel.rect = null;
+  }
+  sel.origEng = eng; S.outLang = lang; S.trDirty = false; $('trTxt').value = result;
+  say('Updated the selected text in ' + L.name + '.' + (review ? ' It was translated in parts; please review it.' : ''), review ? 'warn' : 'ok');
+  syncStyle();
+}
+
+/* ===================== Reset ===================== */
+function onReset() {
+  if (!S.src) { say('Nothing to reset yet.', 'info'); return; }
+  if ((hasTranslation() || S.sel || pendingEdit()) &&
+      !confirm('Reset the output? Translations, corrections, moved text and styles will be cleared. Your uploaded poster stays.')) return;
+  S.blocks = null; S.sel = null; S.outLang = null; S.trDirty = false;
+  hidePanel(); $('ocrHelp').hidden = true; $('engTxt').value = ''; $('trTxt').value = '';
+  say('Reset. The original poster is shown again.', 'info');
+  render();
+}
+
+/* ===================== Export ===================== */
+function saveBlob(blob, name) {
+  const u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 4000);
+}
+let expTok = 0;
+function invalidateExport() {
+  expTok++;
+  if (S.pngUrl) { URL.revokeObjectURL(S.pngUrl); S.pngUrl = null; }
+  $('dlPng').setAttribute('href', '#'); $('dlPng').removeAttribute('download');
+  clearTimeout(S.exportTimer);
+  const tok = expTok;
+  S.exportTimer = setTimeout(() => {
+    if (!S.src) return;
+    $('out').toBlob(bl => {
+      if (!bl || tok !== expTok) return;
+      S.pngUrl = URL.createObjectURL(bl);
+      const dl = $('dlPng'); dl.href = S.pngUrl; dl.download = dlName();
+    }, 'image/png');
+  }, 400);
+}
+function onDownloadPng(ev) {
+  if (!S.src || $('dlPng').getAttribute('aria-disabled') === 'true') { ev.preventDefault(); return; }
+  if (S.pngUrl) return; // prepared link downloads natively
+  ev.preventDefault();
+  $('out').toBlob(bl => bl ? saveBlob(bl, dlName()) : say('The image could not be exported.', 'error'), 'image/png');
+}
+function onDownloadBg(ev) {
+  ev.preventDefault(); if (!S.src) return;
+  S.bg.toBlob(bl => bl ? saveBlob(bl, 'poster_' + langOf(S.outLang || S.lang).name.toLowerCase() + '_background.png') : say('The image could not be exported.', 'error'), 'image/png');
+}
+function buildSvg() {
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let t = '';
+  for (const b of S.blocks || []) {
+    if (!b.translated) continue;
+    const L = layoutBlock(measureCtx, b);
+    const anchor = b.align === 'left' ? 'start' : b.align === 'right' ? 'end' : 'middle', x = textX(b);
+    t += '<text font-family="' + familyOf(b).replace(/"/g, "'") + '" font-size="' + b.size.toFixed(2) + '" font-weight="' + (b.bold ? 700 : 400) +
+         '" font-style="' + (b.italic ? 'italic' : 'normal') + '" fill="' + rgbHex(b.color) + '" text-anchor="' + anchor + '" xml:space="preserve">';
+    L.lines.forEach((ln, i) => {
+      const y = b.box.y + i * L.lh + L.lh / 2 + b.size * 0.35;
+      t += '<tspan x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '">' + esc(ln) + '</tspan>';
+    });
+    t += '</text>\n';
+  }
+  const uri = S.bg.toDataURL('image/png');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + S.w + '" height="' + S.h +
+         '" viewBox="0 0 ' + S.w + ' ' + S.h + '">\n<image x="0" y="0" width="' + S.w + '" height="' + S.h + '" xlink:href="' + uri + '" href="' + uri + '"/>\n' + t + '</svg>\n';
+}
+function onDownloadSvg(ev) {
+  ev.preventDefault(); if (!S.src) return;
+  saveBlob(new Blob([buildSvg()], {type:'image/svg+xml'}), 'poster_' + langOf(S.outLang || S.lang).name.toLowerCase() + '_editable.svg');
+}
+
+/* ===================== Phonetic typing (works offline) =====================
+   Type English letters, press space: the word turns into the selected script.
+   Capitals pick retroflex / long sounds: T D N L R, aa ee oo or A I U, M = anusvara, H = visarga.
+   Common insurance words (policy, premium, claim, EMI…) come from the glossary. Clickable
+   alternatives appear under the box for every word. */
+const SCRIPT_BASE = {hi:0x900, mr:0x900, bn:0x980, gu:0xA80, te:0xC00, kn:0xC80};
+const NUKTA = {hi:0x93C, mr:0x93C};
+// consonants as offsets into the ISCII-aligned Unicode blocks (Devanagari numbering); +0x100 = needs nukta
+const R_CONS = {
+  chh:[0x1B], ksh:[0x15,0x37], jny:[0x1C,0x1E], GY:[0x1C,0x1E], JN:[0x1E],
+  kh:[0x16], gh:[0x18], ch:[0x1A], jh:[0x1D], Th:[0x20], Dh:[0x22], th:[0x25], dh:[0x27], ph:[0x2B], bh:[0x2D], sh:[0x36], Sh:[0x37], zh:[0x33],
+  k:[0x15], g:[0x17], c:[0x15], j:[0x1C], T:[0x1F], D:[0x21], N:[0x23], t:[0x24], d:[0x26], n:[0x28], p:[0x2A], b:[0x2C], m:[0x2E],
+  y:[0x2F], r:[0x30], l:[0x32], L:[0x33], v:[0x35], w:[0x35], s:[0x38], S:[0x36], h:[0x39],
+  f:[0x12B], z:[0x11C], q:[0x115], x:[0x15,0x38], R:[0x121]
+};
+const R_VOW = { // key: [independent offset, matra offset | null]
+  a:[0x05,null], aa:[0x06,0x3E], A:[0x06,0x3E], i:[0x07,0x3F], ii:[0x08,0x40], ee:[0x08,0x40], I:[0x08,0x40],
+  u:[0x09,0x41], uu:[0x0A,0x42], oo:[0x0A,0x42], U:[0x0A,0x42], e:[0x0F,0x47], E:[0x0F,0x47], ai:[0x10,0x48],
+  o:[0x13,0x4B], O:[0x13,0x4B], au:[0x14,0x4C]
+};
+const SOUTH_SHORT = {e:[0x0E,0x46], o:[0x12,0x4A]};
+const STOP_NASAL = [0x19, 0x1E, 0x23, 0x28];
+const isStop = o => o >= 0x15 && o <= 0x2D && !STOP_NASAL.includes(o);
+
+function normalizeRoman(w) {
+  if (w.length > 1 && w === w.toUpperCase()) return w.toLowerCase();
+  return w.charAt(0).toLowerCase() + w.slice(1);
+}
+function tokenize(w) {
+  const out = []; let i = 0;
+  while (i < w.length) {
+    let hit = null;
+    for (let n = 3; n >= 1 && !hit; n--) {
+      const s = w.substr(i, n); if (s.length < n) continue;
+      if (R_CONS[s]) hit = {t:'c', v:R_CONS[s], k:s, n};
+      else if (R_VOW[s]) hit = {t:'v', v:s, n};
+      else if (n === 1 && (s === 'M' || s === 'H')) hit = {t:'s', v:s, n};
+    }
+    if (!hit) {
+      const lc = w[i].toLowerCase();
+      if (lc !== w[i]) { if (R_CONS[lc]) hit = {t:'c', v:R_CONS[lc], k:lc, n:1}; else if (R_VOW[lc]) hit = {t:'v', v:lc, n:1}; }
+    }
+    if (!hit) hit = {t:'o', v:w[i], n:1};
+    out.push(hit); i += hit.n;
+  }
+  return out;
+}
+function emitBrahmic(tk, lang, opt) {
+  const B = SCRIPT_BASE[lang], V = B + 0x4D, nk = NUKTA[lang];
+  const south = lang === 'te' || lang === 'kn';
+  const anusOK = o => lang === 'bn' ? (o >= 0x15 && o <= 0x18) : isStop(o);
+  const ch = o => String.fromCodePoint(B + o);
+  const cons = o => {
+    if (o === 0x121 && !nk) o = 0x30;
+    return o >= 0x100 ? ch(o - 0x100) + (nk ? String.fromCodePoint(nk) : '') : ch(o);
+  };
+  let out = '', pend = false;
+  for (let i = 0; i < tk.length; i++) {
+    const t = tk[i];
+    if (t.t === 'c') {
+      if (!pend && t.v.length === 1 && (t.v[0] === 0x28 || t.v[0] === 0x2E) && tk[i + 1] && tk[i + 1].t === 'c' && anusOK(tk[i + 1].v[0])) {
+        out += ch(2); continue;
+      }
+      if (pend) out += String.fromCodePoint(V);
+      t.v.forEach((o, j) => { if (j) out += String.fromCodePoint(V); out += cons(o); });
+      pend = true;
+    } else if (t.t === 'v') {
+      let [ind, mat] = R_VOW[t.v];
+      if (south && !opt.longEO && SOUTH_SHORT[t.v]) [ind, mat] = SOUTH_SHORT[t.v];
+      if (pend) { if (mat != null) out += ch(mat); pend = false; } else out += ch(ind);
+    } else if (t.t === 's') { out += ch(t.v === 'M' ? 2 : 3); pend = false; }
+    else { out += t.v; pend = false; }
+  }
+  return out;
+}
+const TA_VOW = {
+  a:[0xB85,null], aa:[0xB86,0xBBE], A:[0xB86,0xBBE], i:[0xB87,0xBBF], ii:[0xB88,0xBC0], ee:[0xB88,0xBC0], I:[0xB88,0xBC0],
+  u:[0xB89,0xBC1], uu:[0xB8A,0xBC2], oo:[0xB8A,0xBC2], U:[0xB8A,0xBC2], e:[0xB8E,0xBC6], E:[0xB8F,0xBC7], ai:[0xB90,0xBC8],
+  o:[0xB92,0xBCA], O:[0xB93,0xBCB], au:[0xB94,0xBCC]
+};
+const TA_KEY = {S:[0xBB8], sh:[0xBB7], Sh:[0xBB7], zh:[0xBB4], R:[0xBB1], h:[0xBB9], x:[0xB95,0xBB8], ksh:[0xB95,0xBB7], jny:[0xB9C,0xB9E], GY:[0xB9C,0xB9E], JN:[0xB9E], s:[0xB9A]};
+const TA_BY_DEV = {0x15:0xB95,0x16:0xB95,0x17:0xB95,0x18:0xB95,0x19:0xB99,0x1A:0xB9A,0x1B:0xB9A,0x1C:0xB9C,0x1D:0xB9C,0x1E:0xB9E,
+  0x1F:0xB9F,0x20:0xB9F,0x21:0xB9F,0x22:0xB9F,0x23:0xBA3,0x24:0xBA4,0x25:0xBA4,0x26:0xBA4,0x27:0xBA4,0x28:0xBA8,0x2A:0xBAA,0x2B:0xBAA,
+  0x2C:0xBAA,0x2D:0xBAA,0x2E:0xBAE,0x2F:0xBAF,0x30:0xBB0,0x32:0xBB2,0x33:0xBB3,0x35:0xBB5,0x36:0xBB7,0x37:0xBB7,0x38:0xBB8,0x39:0xBB9,
+  0x11C:0xB9C,0x12B:0xBAA,0x115:0xB95,0x121:0xBB1};
+function tamCons(t) { return TA_KEY[t.k] || t.v.map(o => TA_BY_DEV[o] || 0xB95); }
+function emitTamil(tk, opt) {
+  const PU = String.fromCodePoint(0xBCD);
+  let out = '', pend = false;
+  for (let i = 0; i < tk.length; i++) {
+    const t = tk[i];
+    if (t.t === 'c') {
+      const nx = tk[i + 1];
+      if (t.k === 'n' && !pend && nx && nx.t === 'c') {
+        const o = nx.v[0];
+        const nas = (o >= 0x15 && o <= 0x18) ? 0xB99 : (o >= 0x1A && o <= 0x1D) ? 0xB9E : (o >= 0x1F && o <= 0x22) ? 0xBA3 : 0;
+        if (nas) { out += String.fromCodePoint(nas) + PU; continue; }
+      }
+      if (pend) out += PU;
+      let cps = tamCons(t);
+      if (t.k === 'n' && i > 0) cps = (nx && nx.t === 'c' && nx.v[0] >= 0x24 && nx.v[0] <= 0x27) ? [0xBA8] : [0xBA9];
+      if (t.k === 's' && nx && nx.t === 'c') cps = [0xBB8];
+      cps.forEach((cp, j) => { if (j) out += PU; out += String.fromCodePoint(cp); });
+      pend = true;
+    } else if (t.t === 'v') {
+      let [ind, mat] = TA_VOW[t.v];
+      if (opt.longEO && t.v === 'e') [ind, mat] = TA_VOW.E;
+      if (opt.longEO && t.v === 'o') [ind, mat] = TA_VOW.O;
+      if (pend) { if (mat != null) out += String.fromCodePoint(mat); pend = false; } else out += String.fromCodePoint(ind);
+    } else if (t.t === 's') { out += t.v === 'M' ? String.fromCodePoint(0xBAE) + PU : String.fromCodePoint(0xB83); pend = false; }
+    else { out += t.v; pend = false; }
+  }
+  return pend ? out + PU : out;
+}
+function translit(w, lang, opt = {}) {
+  if (lang === 'bn') w = w.replace(/ng/g, 'M');
+  const tk = tokenize(w);
+  return lang === 'ta' ? emitTamil(tk, opt) : emitBrahmic(tk, lang, opt);
+}
+const swapRetro = w => w.replace(/Th|Dh|th|dh|[tTdD]/g, m => ({Th:'th', Dh:'dh', th:'Th', dh:'Dh', t:'T', T:'t', d:'D', D:'d'})[m]);
+function longEnd(w) {
+  if (/[^aeiou]a$/.test(w)) return w + 'a';
+  if (/[^aeiou]i$/.test(w)) return w.slice(0, -1) + 'ee';
+  if (/[^aeiou]u$/.test(w)) return w.slice(0, -1) + 'oo';
+  return w;
+}
+function candidates(roman, lang) {
+  const out = [], seen = new Set();
+  const add = text => { if (text && !seen.has(text)) { seen.add(text); out.push({text}); } };
+  const w = normalizeRoman(roman);
+  const g = GL.get(normKey(roman));
+  if (g) add(g[LI[lang]]);
+  const acronym = roman.length >= 2 && roman === roman.toUpperCase();
+  if (acronym) add(roman);
+  // Hindi, Marathi and Gujarati words almost always end in a long ī, so default to that
+  const longI = (lang === 'hi' || lang === 'mr' || lang === 'gu') ? w.replace(/([^aeiou])i$/, '$1ee') : w;
+  const finalEO = (lang === 'ta' || lang === 'te') ? longI.replace(/([^aeiou])e$/, '$1E').replace(/([^aeiou])o$/, '$1O') : longI;
+  add(translit(finalEO, lang));
+  add(translit(longI, lang));
+  add(translit(w, lang));
+  add(translit(swapRetro(longI), lang));
+  add(translit(longEnd(w), lang));
+  if (lang === 'te' || lang === 'kn' || lang === 'ta') add(translit(w, lang, {longEO:true}));
+  add(roman);
+  return out.slice(0, 6);
+}
+
+/* ---- Textarea behaviour ---- */
+const DELIM = /^[\s.,;:!?()\[\]{}"“”‘’\/\\|*&%+=<>@#$-]$/;
+function replaceRange(ta, a, b, txt) {
+  ta.focus(); ta.setSelectionRange(a, b);
+  let ok = false; try { ok = document.execCommand('insertText', false, txt); } catch (_) {}
+  if (!ok || ta.value.slice(a, a + txt.length) !== txt) ta.value = ta.value.slice(0, a) + txt + ta.value.slice(b);
+  ta.setSelectionRange(a + txt.length, a + txt.length);
+}
+function onTrInput(e) {
+  S.trDirty = true;
+  const ta = $('trTxt');
+  if (!S.typeEng) {
+    const d = e.data, c = ta.selectionStart;
+    if ((e.inputType === 'insertText' && d && d.length === 1 && DELIM.test(d)) || e.inputType === 'insertLineBreak') {
+      const m = /[A-Za-z]+$/.exec(ta.value.slice(0, c - 1));
+      if (m) {
+        const roman = m[0], conv = candidates(roman, S.lang)[0].text;
+        replaceRange(ta, m.index, m.index + roman.length, conv);
+        const pos = ta.selectionStart + 1; ta.setSelectionRange(pos, pos);
+        S.last = {start:m.index, end:m.index + conv.length, roman, text:conv};
+      }
+    }
+  }
+  updateUi(); refreshSugg();
+}
+function commitTail() {
+  const ta = $('trTxt'); if (S.typeEng) return;
+  const m = /[A-Za-z]+$/.exec(ta.value); if (!m) return;
+  ta.value = ta.value.slice(0, m.index) + candidates(m[0], S.lang)[0].text;
+}
+function refreshSugg() {
+  const box = $('sugg'); box.innerHTML = '';
+  if (S.typeEng || !S.sel || $('panel').hidden) return;
+  const ta = $('trTxt'), v = ta.value, c = ta.selectionStart;
+  if (c !== ta.selectionEnd) return;
+  let start, end, roman, comp = false;
+  const m = /[A-Za-z]+$/.exec(v.slice(0, c));
+  if (m && (c === v.length || !/[A-Za-z]/.test(v[c]))) { start = m.index; end = c; roman = m[0]; comp = true; }
+  else if (S.last && v.slice(S.last.start, S.last.end) === S.last.text && c >= S.last.end && c <= S.last.end + 1) { start = S.last.start; end = S.last.end; roman = S.last.roman; }
+  else return;
+  candidates(roman, S.lang).forEach((cd, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sg' + (i === 0 ? ' first' : ''); b.textContent = cd.text;
+    b.addEventListener('mousedown', e => e.preventDefault());
+    b.addEventListener('click', () => {
+      const tail = comp && v[end] !== ' ' ? ' ' : '';
+      replaceRange(ta, start, end, cd.text + tail);
+      S.last = {start, end:start + cd.text.length, roman, text:cd.text};
+      S.trDirty = true; updateUi(); refreshSugg();
+    });
+    box.append(b);
+  });
+}
+function toggleTyping() {
+  S.typeEng = !S.typeEng; S.last = null; updateEditorMeta(); refreshSugg();
+}
+
+/* ===================== Wiring ===================== */
+LANGS.forEach(l => $('lang').add(new Option(l.name + ' — ' + l.native, l.code)));
+$('lang').addEventListener('change', () => { S.lang = $('lang').value; S.last = null; if (selBlock()) syncStyle(); updateUi(); refreshSugg(); });
+$('btnUpload').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
+$('btnTranslate').addEventListener('click', onTranslate);
+$('btnReset').addEventListener('click', onReset);
+$('tSelect').addEventListener('click', () => { clearSel(); if (S.src) say('Drag a box around the text you want to translate. After a translation you can also just click any text.', 'info'); });
+$('btnAreaReset').addEventListener('click', resetArea);
+$('btnDelete').addEventListener('click', deleteArea);
+$('tFont').addEventListener('click', () => openTab('font'));
+$('tEdit').addEventListener('click', () => openTab('edit'));
+$('tDownload').addEventListener('click', e => { e.stopPropagation(); $('dlMenu').hidden = !$('dlMenu').hidden; });
+document.addEventListener('click', e => { if (!$('dlMenu').hidden && !$('dlMenu').contains(e.target)) $('dlMenu').hidden = true; });
+$('dlPng').addEventListener('click', e => { onDownloadPng(e); $('dlMenu').hidden = true; });
+$('dlSvg').addEventListener('click', e => { onDownloadSvg(e); $('dlMenu').hidden = true; });
+$('dlBg').addEventListener('click', e => { onDownloadBg(e); $('dlMenu').hidden = true; });
+$('pClose').addEventListener('click', clearSel);
+$('trTxt').addEventListener('input', onTrInput);
+$('trTxt').addEventListener('keyup', refreshSugg);
+$('trTxt').addEventListener('click', refreshSugg);
+$('trTxt').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g') { e.preventDefault(); toggleTyping(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); onTranslate(); }
+});
+$('typeMode').addEventListener('click', () => { toggleTyping(); $('trTxt').focus(); });
+$('engTxt').addEventListener('input', updateUi);
+['stSize', 'stColor', 'stAlign', 'stFont', 'stLh', 'stBold', 'stItalic'].forEach(id => {
+  $(id).addEventListener('input', onStyle); $(id).addEventListener('change', onStyle);
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!$('dlMenu').hidden) $('dlMenu').hidden = true; else if (S.sel) clearSel();
+});
+window.addEventListener('resize', drawOverlay);
+window.addEventListener('beforeunload', () => { if (S.url) URL.revokeObjectURL(S.url); if (S.pngUrl) URL.revokeObjectURL(S.pngUrl); });
+
+// drag and drop anywhere on the page (also stops the browser from navigating to a dropped file)
+['dragenter', 'dragover'].forEach(t => window.addEventListener(t, e => { e.preventDefault(); $('stage').classList.add('drag'); }));
+['dragleave', 'drop'].forEach(t => window.addEventListener(t, e => { e.preventDefault(); $('stage').classList.remove('drag'); }));
+window.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+const ov = $('ov');
+ov.addEventListener('pointerdown', e => {
+  if (!S.src || e.button > 0) return;
+  ov.setPointerCapture(e.pointerId); ov.focus({preventScroll:true});
+  const p = toImg(e), b = selBlock();
+  let mode = 'select', orig = null;
+  if (b && b.translated) {
+    const h = hitHandle(b, p), r = hitRect(b);
+    if (h) mode = h;
+    else if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) mode = 'move';
+    if (mode !== 'select') orig = {x:b.box.x, y:b.box.y, w:b.box.w, size:b.size};
+  }
+  S.drag = {mode, x0:p.x, y0:p.y, x1:p.x, y1:p.y, cx:e.clientX, cy:e.clientY, moved:false, orig};
+});
+ov.addEventListener('pointermove', e => {
+  if (!S.src) return;
+  const p = toImg(e), d = S.drag, b = selBlock();
+  if (d) {
+    if (Math.hypot(e.clientX - d.cx, e.clientY - d.cy) > 3) d.moved = true;
+    const dx = p.x - d.x0, dy = p.y - d.y0;
+    if (d.mode === 'select') { d.x1 = Math.max(0, Math.min(S.w, p.x)); d.y1 = Math.max(0, Math.min(S.h, p.y)); drawOverlay(); }
+    else if (b && d.moved) {
+      if (d.mode === 'move') {
+        b.box.x = Math.max(0, Math.min(S.w - b.box.w, d.orig.x + dx)); b.box.y = Math.max(0, Math.min(S.h - 10, d.orig.y + dy)); b.moved = true;
+      } else {
+        const nw = Math.max(20, Math.min(S.w - b.box.x, d.orig.w + dx));
+        b.box.w = nw;
+        if (d.mode === 'scale') { b.size = Math.max(4, d.orig.size * nw / d.orig.w); b.userSized = true; syncStyle(); }
+      }
+      render(true);
+    }
+    return;
+  }
+  S.hover = blockAt(p.x, p.y);
+  let cur = S.hover ? 'pointer' : 'crosshair';
+  if (b && b.translated) {
+    const h = hitHandle(b, p), r = hitRect(b);
+    if (h === 'scale') cur = 'nwse-resize'; else if (h === 'resizeW') cur = 'ew-resize';
+    else if (p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) cur = 'move';
+  }
+  ov.style.cursor = cur; drawOverlay();
+});
+ov.addEventListener('pointerup', e => {
+  const d = S.drag; if (!d) return; S.drag = null;
+  const p = toImg(e);
+  if (d.mode !== 'select') { updateUi(); drawOverlay(); return; }
+  if (!d.moved) { const b = blockAt(p.x, p.y); if (b) selectBlock(b); else clearSel(); return; }
+  const rect = clampRect({x:Math.min(d.x0, d.x1), y:Math.min(d.y0, d.y1), w:Math.abs(d.x1 - d.x0), h:Math.abs(d.y1 - d.y0)});
+  if (rect.w < 8 || rect.h < 8) { drawOverlay(); return; }
+  selectRect(rect);
+});
+ov.addEventListener('pointerleave', () => { if (!S.drag) { S.hover = null; drawOverlay(); } });
+ov.addEventListener('pointercancel', () => { S.drag = null; drawOverlay(); });
+function cycleBlock(dir) {
+  const list = (S.blocks || []).slice().sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x);
+  if (!list.length) return;
+  const cur = selBlock(), i = cur ? list.indexOf(cur) : (dir > 0 ? -1 : 0);
+  selectBlock(list[(i + dir + list.length) % list.length]);
+}
+ov.addEventListener('keydown', e => {
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.sel) { e.preventDefault(); deleteArea(); return; }
+  const b = selBlock();
+  if (!b || !b.translated) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); cycleBlock(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); cycleBlock(-1); }
+    return;
+  }
+  const st = e.shiftKey ? 10 : 1; let dx = 0, dy = 0;
+  if (e.key === 'ArrowLeft') dx = -st; else if (e.key === 'ArrowRight') dx = st;
+  else if (e.key === 'ArrowUp') dy = -st; else if (e.key === 'ArrowDown') dy = st; else return;
+  e.preventDefault();
+  b.box.x = Math.max(0, Math.min(S.w - b.box.w, b.box.x + dx)); b.box.y = Math.max(0, Math.min(S.h - 10, b.box.y + dy)); b.moved = true;
+  render(true);
+});
+
+updateUi();
+})();
+</script>
+</body>
+</html>
